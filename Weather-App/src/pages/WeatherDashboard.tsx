@@ -3,6 +3,9 @@ import { useGeolocation } from "../hooks/use-geolocation"
 import WeatherSkeleton from "../component/loading-skeleton";
 import { Alert, AlertDescription, AlertTitle } from "../component/ui/alert";
 import { Button } from "../component/ui/Button";
+import { useForecastQuery, useReverseQuery, useWeatherQuery } from "../hooks/use-weather";
+import { CurrentWeather } from "../component/current.weather";
+import HourlyTemperature from "../component/hourly-temprature";
 
 const WeatherDashboard = () => {
 
@@ -13,12 +16,18 @@ const WeatherDashboard = () => {
     isLoading:locationLoading
       } = useGeolocation();
 
-  console.log(coordinates)
+      const weatherQuery = useWeatherQuery(coordinates);
+      const forecastQuery = useForecastQuery(coordinates);
+      const locationQuery = useReverseQuery(coordinates);
+      
+      console.log(weatherQuery.data)
 
   const handleRefresh=()=> {
      getLocation();
      if (coordinates) {
-        //reload weather data
+        weatherQuery.refetch()
+        forecastQuery.refetch()
+        locationQuery.refetch()
      }
   };
 
@@ -62,6 +71,33 @@ const WeatherDashboard = () => {
    )
   }
 
+  const locationName = locationQuery.data?.[0];
+
+    if (weatherQuery.error || forecastQuery.error) {
+      return (
+       <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription className="flex flex-col gap-4">
+          <p>Failed to fetch weather data. Please try again</p>
+          <Button 
+            onClick={handleRefresh} 
+            variant={"outline"} 
+            className="w-fit">
+            <RefreshCcw className="mr-2 h-4 w-4"/>
+              retry
+          </Button>
+        </AlertDescription>
+      </Alert>
+      )
+    }
+
+    if ( !weatherQuery.data || !forecastQuery.data) {
+      return <WeatherSkeleton/>
+    }
+  
+    
+
   return ( 
   <div className="space-y-4">
     {/* Favorite Cities */}
@@ -71,9 +107,28 @@ const WeatherDashboard = () => {
         variant={'outline'}
         size={'icon'}
         onClick={handleRefresh}
+        disabled={weatherQuery.isFetching || forecastQuery.isFetching}
         >
-        <RefreshCcw size={15}/>
+        <RefreshCcw className={`h-4 w-4 ${weatherQuery.isFetching ? "animate-spin" : ""}`}/>
       </Button>
+    </div>
+    <div className="grid gap-6">
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Current Weather */}
+        <CurrentWeather 
+          data={weatherQuery.data}
+          locationName={locationName}
+        />
+      {/* hourly temperature */}
+        <HourlyTemperature
+          data={forecastQuery.data}
+        />
+      </div>
+      <div>
+        {/* details  */}
+        
+        {/* daily forecast */}
+      </div>
     </div>
   </div>
     
