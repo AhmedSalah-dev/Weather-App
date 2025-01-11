@@ -6,6 +6,8 @@ import { Button } from "../component/ui/Button";
 import { useForecastQuery, useReverseQuery, useWeatherQuery } from "../hooks/use-weather";
 import { CurrentWeather } from "../component/current.weather";
 import HourlyTemperature from "../component/hourly-temprature";
+import WeatherDetails from "../component/WeatherDetails";
+import WeatherForecast from "../component/WeatherForecast";
 
 const WeatherDashboard = () => {
 
@@ -20,7 +22,7 @@ const WeatherDashboard = () => {
       const forecastQuery = useForecastQuery(coordinates);
       const locationQuery = useReverseQuery(coordinates);
       
-      console.log(weatherQuery.data)
+     
 
   const handleRefresh=()=> {
      getLocation();
@@ -124,10 +126,11 @@ const WeatherDashboard = () => {
           data={forecastQuery.data}
         />
       </div>
-      <div>
+      <div className="grid gap-6 md:grid-cols-2 items-start">
         {/* details  */}
-        
+        <WeatherDetails data={weatherQuery.data}/>
         {/* daily forecast */}
+        <WeatherForecast data={forecastQuery.data}/>
       </div>
     </div>
   </div>
